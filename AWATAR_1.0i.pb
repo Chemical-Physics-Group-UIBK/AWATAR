@@ -1,7 +1,7 @@
 ; AWATAR vs. 1.0i
-; (c) 2006, 2008, 2009, 2021, 2022, 2023 Martin K. Beyer, TU Berlin, Christian-Albrechts-Universität zu Kiel, Universität Innsbruck
-; (c) 2022  Milan Oncák, Universität Innsbruck
-; (c) 2022, 2023, 2024, 2025 Magdalena Salzburger, Universität Innsbruck
+; (c) 2006, 2008, 2009, 2021, 2022, 2023 Martin K. Beyer, TU Berlin, Christian-Albrechts-Universitï¿½t zu Kiel, Universitï¿½t Innsbruck
+; (c) 2022  Milan Oncï¿½k, Universitï¿½t Innsbruck
+; (c) 2022, 2023, 2024, 2025 Magdalena Salzburger, Universitï¿½t Innsbruck
 
 ; PureBasic Visual Designer v3.81 build 1321
 
@@ -29,11 +29,11 @@
 ; new in rrkm vs. 2.70: free definition of quantum states, in particular 1D, 2D and 3D particle in a box
 ;                  track number of active degrees of freedom and check for consistency between all wells and TSs
 ; new in rrkm vs. 2.80: Remember populations for all temperatures and write into one excel-import compatible table for final export
-;                  Change „save all“ And „load all“ To include population
+;                  Change ï¿½save allï¿½ And ï¿½load allï¿½ To include population
 ;                  Allow Continue MEM With new convergence settings: very easy, replace initial Boltzmann distribution With previously converged population
 ; new in rrkm vs. 2.90:  fix problem with window size after loading data
 ;                   bugfix in calculation of multiwell MEM rates - correct: rate(i_channels,k); wrong: rate(well_channel(i_channels),k) - changed in two places
-;                   Add button „export population“
+;                   Add button ï¿½export populationï¿½
 ;                   MEM works now also with one temperature, start temperature is used in this case
 ; new in rrkm vs. 3.00 Iterative MEM included. This allows to improve finite timestep and convergence iteratively
 ; new in rrkm vs. 3.01 radiative transition rates calculated for all temperatures before starting main part of Master Equation Modelling
@@ -337,7 +337,9 @@ End
 
 ;- Exit_question
 exit_question:
-      Flag_Exit = MessageRequester("Program End","Leaving the program will destroy" + Chr(10) + "all unsaved information, proceed?",1)
+  If MessageRequester("Program End", "Leaving the program will destroy" + Chr(10) + "all unsaved information, proceed?", #PB_MessageRequester_YesNo) = #PB_MessageRequester_Yes
+    Flag_Exit = 1
+  EndIf
 Return
 
 
