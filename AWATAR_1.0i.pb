@@ -1,7 +1,7 @@
 ; AWATAR vs. 1.0i
-; (c) 2006, 2008, 2009, 2021, 2022, 2023 Martin K. Beyer, TU Berlin, Christian-Albrechts-Universit�t zu Kiel, Universit�t Innsbruck
-; (c) 2022  Milan Onc�k, Universit�t Innsbruck
-; (c) 2022, 2023, 2024, 2025 Magdalena Salzburger, Universit�t Innsbruck
+; (c) 2006, 2008, 2009, 2021, 2022, 2023 Martin K. Beyer, TU Berlin, Christian-Albrechts-Universität zu Kiel, Universität Innsbruck
+; (c) 2022  Milan Ončák, Universität Innsbruck
+; (c) 2022, 2023, 2024, 2025 Magdalena Salzburger, Universität Innsbruck
 
 ; PureBasic Visual Designer v3.81 build 1321
 
@@ -353,154 +353,157 @@ load_reactant:
   Gosub prepare_molecule_input
   ; end new by MR
   j=1
-  dateiname$ = OpenFileRequester("Read Reactant Frequencies:", "\*.*", "Gaussian Output (*.out) | *.out | All Files (*.*) | *.*", 1)
-  If dateiname$
-    If ReadFile(0,dateiname$)
-      flag_population.l = 0 ; new in vs. 2.8, prevent continue MEM with changed system
-      n_wells = n_wells + 1
-      OpenGadgetList(#Panel_0)
-      AddGadgetItem(#Panel_0, -1, "Well "+Str(n_wells-1))
-      EditorGadget(#Editor_1+n_wells+n_ts, -2, -2, 900, 470)
-      SetGadgetFont(#Editor_1+n_wells+n_ts, FontID(1))   
-      SetGadgetState(#Panel_0,n_wells+n_ts+1)
-      AddGadgetItem(#Editor_1+n_wells+n_ts,-1,"; Reactant: "+dateiname$)
-      If freq_scale <> 1
-        AddGadgetItem(#Editor_1+n_wells+n_ts,-1,"; Frequency Scale Factor: "+StrD(freq_scale,4))
-      EndIf
-      While Eof(0)=0
-        text$=ReadString(0)
-        If FindString(text$,"Multiplicity",1)
-          current_degeneracy.l = Val(Right(text$,2))
-        EndIf
-        If FindString(text$,"Frequencies -- ",1)
-          For i = 0 To 2
-            dotpos.l = FindString(text$,".",i*23+15)
-            If dotpos > 0
-              read_freq(j) = ValD(Mid(text$,dotpos-5,11))
-              freqline$(i)=RSet(StrD(read_freq(j),4),10)
-            EndIf
-            j=j+1   ; count even if no 2nd or 3rd vibration is present for correct calculation of intensity index
-          Next i
-          j=j-3     ; set counter back because intensities are following
-        EndIf
-        If FindString(text$,"IR Inten    -- ",1)
-          For i = 0 To 2
-            dotpos.l = FindString(text$,".",i*23+15)
-            If dotpos > 0
-              read_int(j) = ValD(Mid(text$,dotpos-5,11))
-              line$=freqline$(i)+RSet(StrD(read_int(j),4),12)+"    vib"
-              If freq_scale <> 1
-                line$=line$+RSet(StrD(ValD(freqline$(i))*freq_scale,4),12)+RSet(StrD(read_int(j),4),12)
-              EndIf
-              If decimal_flag = 1
-                line$=ReplaceString(line$,".",",")
-              EndIf
-              AddGadgetItem(#Editor_1+n_wells+n_ts,-1,line$)
-              j = j + 1
-            EndIf
-          Next i
-        EndIf
-        If FindString(text$,"Thermal correction to Energy=",1)
-          th_energy.d = ValD(Right(text$,15))
-        EndIf
-        If FindString(text$,"Sum of electronic and thermal Energies",1)
-          energy.d = ValD(Right(text$,15))-th_energy
-          line$=RSet(StrD(energy,6),22)+"    energy"
-          If decimal_flag = 1
-            line$=ReplaceString(line$,".",",")
-          EndIf
-          AddGadgetItem(#Editor_1+n_wells+n_ts,-1,line$)
-          line$ = RSet(Str(current_degeneracy),22)+"    degeneracy    ; multiply spin multiplicity with number of optical isomers"
-          AddGadgetItem(#Editor_1+n_wells+n_ts,-1,line$)
-        EndIf
-        If FindString(UCase(text$),"ROTATIONAL CONSTANTS (GHZ)",1) And rot_flag = 1
-          For i = 1 To 3
-            read_rot(i) = ValD(Mid(text$,24+i*12,12))*conversion_ghz_cm
-          Next i
-          ; determine active rotor
-          If read_rot(1) = read_rot(3) ; spherical symmetric molecule with read_rot(1)=read_rot(2)=read_rot(3), changed in vs3.21
-            line$=RSet(StrD(read_rot(1),6),10)+"                1D-rot symm ;Note, that this molecule is a spherical rotor"
-            If decimal_flag = 1
-              line$=ReplaceString(line$,".",",")
-            EndIf
-            AddGadgetItem(#Editor_1+n_wells+n_ts,-1,line$)
-            line$=RSet(StrD(read_rot(2),6),10)+"                inactive external rotor"
-            If decimal_flag = 1
-              line$=ReplaceString(line$,".",",")
-            EndIf
-            AddGadgetItem(#Editor_1+n_wells+n_ts,-1,line$)
-            line$=RSet(StrD(read_rot(3),6),10)+"                inactive external rotor"
-            If decimal_flag = 1
-              line$=ReplaceString(line$,".",",")
-            EndIf
-            AddGadgetItem(#Editor_1+n_wells+n_ts,-1,line$)
-          ElseIf read_rot(1)/read_rot(2) >= read_rot(2)/read_rot(3) ; molecule approximated as prolate symmetric top
-            active_b.d = read_rot(1)
-            line$=RSet(StrD(read_rot(1),6),10)+" "+Str(read_sym.l(1))+"  1D-rot symm"
-            If decimal_flag = 1
-              line$=ReplaceString(line$,".",",")
-            EndIf
-            AddGadgetItem(#Editor_1+n_wells+n_ts,-1,line$)
-            line$=RSet(StrD(read_rot(2),6),10)+"                inactive external rotor"
-            If decimal_flag = 1
-              line$=ReplaceString(line$,".",",")
-            EndIf
-            AddGadgetItem(#Editor_1+n_wells+n_ts,-1,line$)
-            line$=RSet(StrD(read_rot(3),6),10)+"                inactive external rotor"
-            If decimal_flag = 1
-              line$=ReplaceString(line$,".",",")
-            EndIf
-            AddGadgetItem(#Editor_1+n_wells+n_ts,-1,line$)
-          Else ; molecule approximated as oblate symmetric top
-            active_b.d = read_rot(3)
-            line$=RSet(StrD(read_rot(1),6),10)+"                inactive external rotor"
-            If decimal_flag = 1
-              line$=ReplaceString(line$,".",",")
-            EndIf
-            AddGadgetItem(#Editor_1+n_wells+n_ts,-1,line$)
-            line$=RSet(StrD(read_rot(2),6),10)+"                inactive external rotor"
-            If decimal_flag = 1
-              line$=ReplaceString(line$,".",",")
-            EndIf
-            AddGadgetItem(#Editor_1+n_wells+n_ts,-1,line$)
-            line$=RSet(StrD(read_rot(3),6),10)+"    "+Str(read_sym.l(1))+"           1D-rot symm"
-            If decimal_flag = 1
-              line$=ReplaceString(line$,".",",")
-            EndIf
-            AddGadgetItem(#Editor_1+n_wells+n_ts,-1,line$)
-          EndIf
-        EndIf
-        ; linear rotors
-        If FindString(UCase(text$),"ROTATIONAL CONSTANT (GHZ)",1) And rot_flag=1
-          read_rot(1) = ValD(Mid(text$,36,12))*conversion_ghz_cm
-          ; determine active rotor
-          line$=";" + RSet(StrD(read_rot(1),6),10)+"    "+Str(read_sym.l(1))+"           inactive 2D rotor"
-          If decimal_flag=1
-            line$=ReplaceString(line$,".",",")
-          EndIf
-          AddGadgetItem(#Editor_1+n_wells+n_ts,-1,line$)
-        EndIf
-        If FindString(UCase(text$),"ROTATIONAL SYMMETRY NUMBER",1)
-          read_sym.l(1) = Val(Right(text$,4))
-        EndIf  
-        If FindString(UCase(text$),"ROTATIONAL TEMPERATURE",1)
-          rot_flag = 1
-        Else
-          rot_flag = 0
-        EndIf
-      Wend
-      CloseFile(0)
-      n_modes = j-1
-      StatusBarText(#StatusBar_0, 0, " Read "+Str(n_modes)+" reactant frequencies.")
-      Gosub resize_window
-    EndIf
-    Else
-      StatusBarText(#StatusBar_0, 0, " Error reading reactant frequencies.")
-      Ergebnis = MessageRequester("Error","Unable To Read Reactant Frequencies",#PB_MessageRequester_Ok ) 
-  EndIf
-  ; new by MR
-  Gosub check_molecule_input
-  ; end new by MR
+  dateiname$ = OpenFileRequester("Read Reactant Frequencies:", "\*.*", "Gaussian Output (*.out) | *.out | All Files (*.*) | *.*", 1, #PB_Requester_MultiSelection)
+  While dateiname$
+  	If dateiname$
+		If ReadFile(0,dateiname$)
+		flag_population.l = 0 ; new in vs. 2.8, prevent continue MEM with changed system
+		n_wells = n_wells + 1
+		OpenGadgetList(#Panel_0)
+		AddGadgetItem(#Panel_0, -1, "Well "+Str(n_wells-1))
+		EditorGadget(#Editor_1+n_wells+n_ts, -2, -2, 900, 470)
+		SetGadgetFont(#Editor_1+n_wells+n_ts, FontID(1))   
+		SetGadgetState(#Panel_0,n_wells+n_ts+1)
+		AddGadgetItem(#Editor_1+n_wells+n_ts,-1,"; Reactant: "+dateiname$)
+		If freq_scale <> 1
+			AddGadgetItem(#Editor_1+n_wells+n_ts,-1,"; Frequency Scale Factor: "+StrD(freq_scale,4))
+		EndIf
+		While Eof(0)=0
+			text$=ReadString(0)
+			If FindString(text$,"Multiplicity",1)
+			current_degeneracy.l = Val(Right(text$,2))
+			EndIf
+			If FindString(text$,"Frequencies -- ",1)
+			For i = 0 To 2
+				dotpos.l = FindString(text$,".",i*23+15)
+				If dotpos > 0
+				read_freq(j) = ValD(Mid(text$,dotpos-5,11))
+				freqline$(i)=RSet(StrD(read_freq(j),4),10)
+				EndIf
+				j=j+1   ; count even if no 2nd or 3rd vibration is present for correct calculation of intensity index
+			Next i
+			j=j-3     ; set counter back because intensities are following
+			EndIf
+			If FindString(text$,"IR Inten    -- ",1)
+			For i = 0 To 2
+				dotpos.l = FindString(text$,".",i*23+15)
+				If dotpos > 0
+				read_int(j) = ValD(Mid(text$,dotpos-5,11))
+				line$=freqline$(i)+RSet(StrD(read_int(j),4),12)+"    vib"
+				If freq_scale <> 1
+					line$=line$+RSet(StrD(ValD(freqline$(i))*freq_scale,4),12)+RSet(StrD(read_int(j),4),12)
+				EndIf
+				If decimal_flag = 1
+					line$=ReplaceString(line$,".",",")
+				EndIf
+				AddGadgetItem(#Editor_1+n_wells+n_ts,-1,line$)
+				j = j + 1
+				EndIf
+			Next i
+			EndIf
+			If FindString(text$,"Thermal correction to Energy=",1)
+			th_energy.d = ValD(Right(text$,15))
+			EndIf
+			If FindString(text$,"Sum of electronic and thermal Energies",1)
+			energy.d = ValD(Right(text$,15))-th_energy
+			line$=RSet(StrD(energy,6),22)+"    energy"
+			If decimal_flag = 1
+				line$=ReplaceString(line$,".",",")
+			EndIf
+			AddGadgetItem(#Editor_1+n_wells+n_ts,-1,line$)
+			line$ = RSet(Str(current_degeneracy),22)+"    degeneracy    ; multiply spin multiplicity with number of optical isomers"
+			AddGadgetItem(#Editor_1+n_wells+n_ts,-1,line$)
+			EndIf
+			If FindString(UCase(text$),"ROTATIONAL CONSTANTS (GHZ)",1) And rot_flag = 1
+			For i = 1 To 3
+				read_rot(i) = ValD(Mid(text$,24+i*12,12))*conversion_ghz_cm
+			Next i
+			; determine active rotor
+			If read_rot(1) = read_rot(3) ; spherical symmetric molecule with read_rot(1)=read_rot(2)=read_rot(3), changed in vs3.21
+				line$=RSet(StrD(read_rot(1),6),10)+"                1D-rot symm ;Note, that this molecule is a spherical rotor"
+				If decimal_flag = 1
+				line$=ReplaceString(line$,".",",")
+				EndIf
+				AddGadgetItem(#Editor_1+n_wells+n_ts,-1,line$)
+				line$=RSet(StrD(read_rot(2),6),10)+"                inactive external rotor"
+				If decimal_flag = 1
+				line$=ReplaceString(line$,".",",")
+				EndIf
+				AddGadgetItem(#Editor_1+n_wells+n_ts,-1,line$)
+				line$=RSet(StrD(read_rot(3),6),10)+"                inactive external rotor"
+				If decimal_flag = 1
+				line$=ReplaceString(line$,".",",")
+				EndIf
+				AddGadgetItem(#Editor_1+n_wells+n_ts,-1,line$)
+			ElseIf read_rot(1)/read_rot(2) >= read_rot(2)/read_rot(3) ; molecule approximated as prolate symmetric top
+				active_b.d = read_rot(1)
+				line$=RSet(StrD(read_rot(1),6),10)+" "+Str(read_sym.l(1))+"  1D-rot symm"
+				If decimal_flag = 1
+				line$=ReplaceString(line$,".",",")
+				EndIf
+				AddGadgetItem(#Editor_1+n_wells+n_ts,-1,line$)
+				line$=RSet(StrD(read_rot(2),6),10)+"                inactive external rotor"
+				If decimal_flag = 1
+				line$=ReplaceString(line$,".",",")
+				EndIf
+				AddGadgetItem(#Editor_1+n_wells+n_ts,-1,line$)
+				line$=RSet(StrD(read_rot(3),6),10)+"                inactive external rotor"
+				If decimal_flag = 1
+				line$=ReplaceString(line$,".",",")
+				EndIf
+				AddGadgetItem(#Editor_1+n_wells+n_ts,-1,line$)
+			Else ; molecule approximated as oblate symmetric top
+				active_b.d = read_rot(3)
+				line$=RSet(StrD(read_rot(1),6),10)+"                inactive external rotor"
+				If decimal_flag = 1
+				line$=ReplaceString(line$,".",",")
+				EndIf
+				AddGadgetItem(#Editor_1+n_wells+n_ts,-1,line$)
+				line$=RSet(StrD(read_rot(2),6),10)+"                inactive external rotor"
+				If decimal_flag = 1
+				line$=ReplaceString(line$,".",",")
+				EndIf
+				AddGadgetItem(#Editor_1+n_wells+n_ts,-1,line$)
+				line$=RSet(StrD(read_rot(3),6),10)+"    "+Str(read_sym.l(1))+"           1D-rot symm"
+				If decimal_flag = 1
+				line$=ReplaceString(line$,".",",")
+				EndIf
+				AddGadgetItem(#Editor_1+n_wells+n_ts,-1,line$)
+			EndIf
+			EndIf
+			; linear rotors
+			If FindString(UCase(text$),"ROTATIONAL CONSTANT (GHZ)",1) And rot_flag=1
+			read_rot(1) = ValD(Mid(text$,36,12))*conversion_ghz_cm
+			; determine active rotor
+			line$=";" + RSet(StrD(read_rot(1),6),10)+"    "+Str(read_sym.l(1))+"           inactive 2D rotor"
+			If decimal_flag=1
+				line$=ReplaceString(line$,".",",")
+			EndIf
+			AddGadgetItem(#Editor_1+n_wells+n_ts,-1,line$)
+			EndIf
+			If FindString(UCase(text$),"ROTATIONAL SYMMETRY NUMBER",1)
+			read_sym.l(1) = Val(Right(text$,4))
+			EndIf  
+			If FindString(UCase(text$),"ROTATIONAL TEMPERATURE",1)
+			rot_flag = 1
+			Else
+			rot_flag = 0
+			EndIf
+		Wend
+		CloseFile(0)
+		n_modes = j-1
+		StatusBarText(#StatusBar_0, 0, " Read "+Str(n_modes)+" reactant frequencies.")
+		Gosub resize_window
+		EndIf
+		Else
+		StatusBarText(#StatusBar_0, 0, " Error reading reactant frequencies.")
+		Ergebnis = MessageRequester("Error","Unable To Read Reactant Frequencies",#PB_MessageRequester_Ok ) 
+	EndIf
+	; new by MR
+	Gosub check_molecule_input
+	; end new by MR
+	dateiname$ = NextSelectedFileName() 
+Wend
 Return
 
 ;- Load IR Modes of TS
@@ -511,7 +514,8 @@ load_ts:
   Gosub prepare_molecule_input
   ; end new by MR
   j=1
-  dateiname$ = OpenFileRequester("Read Transition State Frequencies:", "\*.*", "Gaussian Output (*.out) | *.out | All Files (*.*) | *.*", 1)
+dateiname$ = OpenFileRequester("Read Reactant Frequencies:", "\*.*", "Gaussian Output (*.out) | *.out | All Files (*.*) | *.*", 1, #PB_Requester_MultiSelection)
+While dateiname$
   If dateiname$
     If ReadFile(0,dateiname$)
       n_ts = n_ts + 1
@@ -721,6 +725,8 @@ load_ts:
   ; new by MR
   Gosub check_molecule_input
   ; end new by MR
+  dateiname$ = NextSelectedFileName()
+Wend
 Return
 
 ;- Add IR Modes of 2nd TS fragment (for loose TS)
@@ -730,163 +736,180 @@ add_ts:
   ; new by MR
   Gosub prepare_molecule_input
   ; end new by MR
-  j=1
-  active_panel = GetGadgetState(#panel_0)
-  If Left(GetGadgetItemText(#Panel_0,active_panel),2) = "TS" 
-    dateiname$ = OpenFileRequester("Add 2nd Transition State Fragment:", "\*.*", "Gaussian Output (*.out) | *.out | All Files (*.*) | *.*", 1)
-    If dateiname$
-      If ReadFile(0,dateiname$)
-        AddGadgetItem(#Editor_1+active_panel-1,-1,"")
-        AddGadgetItem(#Editor_1+active_panel-1,-1,"; 2nd fragment: "+dateiname$)
-        If freq_scale <> 1
-          AddGadgetItem(#Editor_1+active_panel-1,-1,"; Frequency Scale Factor: "+StrD(freq_scale,4))
-        EndIf
-        While Eof(0)=0
-          text$=ReadString(0)
-          If FindString(text$,"Multiplicity",1)
-            current_degeneracy.l = Val(Right(text$,2))
-          EndIf  
-          If FindString(text$,"Frequencies -- ",1)
-            For i = 0 To 2
-              dotpos.l = FindString(text$,".",i*23+15)
-              If dotpos > 0
-              read_freq(j) = ValD(Mid(text$,dotpos-5,11))
-              If read_freq(j) > 0
-                line$=RSet(StrD(read_freq(j),4),10)+"    vib"
-                If freq_scale <> 1
-                  line$=line$+RSet(StrD(read_freq(j)*freq_scale,4),10)
-                EndIf
-                If decimal_flag=1
-                  line$=ReplaceString(line$,".",",")
-                EndIf
-                  AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
-                Else
-                  line$=";" + RSet(StrD(read_freq(j),4),10)+"    reaction coordinate"
-                  If decimal_flag=1
-                    line$=ReplaceString(line$,".",",")
-                  EndIf
-                  AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
-                EndIf
-                j=j+1
-              EndIf
-            Next i
-          EndIf
-          If FindString(text$,"Thermal correction to Energy=",1)
-            th_energy.d = ValD(Right(text$,15))
-          EndIf
-          If FindString(text$,"Sum of electronic and thermal Energies",1)
-            energy.d = ValD(Right(text$,15))-th_energy
-            line$=RSet(StrD(energy,6),22)+"    energy"
-            If decimal_flag=1
-              line$=ReplaceString(line$,".",",")
-            EndIf
-            AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
-            If current_degeneracy = 1
-             line$ = "; The Multiplicity of this fragment is " + RSet(Str(current_degeneracy),1)
-            Else
-             line$ = "; The Multiplicity of this fragment is " + RSet(Str(current_degeneracy),1)+"     WARNING: Degeneracy should be adapted according to the physics of the system"
-            EndIf  
-            AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
-          EndIf
-          If FindString(UCase(text$),"ROTATIONAL CONSTANTS (GHZ)",1) And rot_flag=1
-            For i = 1 To 3
-              read_rot(i) = ValD(Mid(text$,24+i*12,12))*conversion_ghz_cm
-            Next i
-            ; determine active rotor ;changed in vs 3.20, 3.21
-            If read_rot(1) = read_rot(3) ; spherical symmetric molecule with read_rot(1)=read_rot(2)=read_rot(3)
-             line$= RSet(StrD(read_rot(1),6),10)+"   1D-rot symm"
-             If decimal_flag=1
-               line$=ReplaceString(line$,".",",")
-             EndIf
-             AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
-             line$=RSet(StrD(read_rot(2),6),10)+"   2D-rot symm"
-             If decimal_flag=1
-               line$=ReplaceString(line$,".",",")
-             EndIf
-             AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
-             line$=";" + RSet(StrD(read_rot(3),6),10)+"    inactive external rotor"
-             If decimal_flag=1
-               line$=ReplaceString(line$,".",",")
-             EndIf
-             AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
-           ElseIf read_rot(1)/read_rot(2) >= read_rot(2)/read_rot(3) ; molecule approximated as prolate symmetric top
-             line$=RSet(StrD(read_rot(1),6),10)+" "+Str(read_sym.l(1))+"  1D-rot symm"
-             If decimal_flag=1
-               line$=ReplaceString(line$,".",",")
-             EndIf
-             AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
-             line$=";" + RSet(StrD(read_rot(2),6),10)+"    inactive external rotor"
-             If decimal_flag=1
-               line$=ReplaceString(line$,".",",")
-             EndIf
-             AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
-             line$=";" + RSet(StrD(read_rot(3),6),10)+"    inactive external rotor"
-             If decimal_flag=1
-               line$=ReplaceString(line$,".",",")
-             EndIf
-             AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
-             line$=RSet(StrD(Sqr(read_rot(3)*read_rot(2)),6),10)+" 1  2D-rot symm ;symmetry number set to 1."  ; instead of 2 inactive external rotors, there is one active 2d Rotor, with rotational constant = geometric mean of the rotational constants from inactive rotors.  ; Symmetry number set to 1, because it is already counted for this fragment in the 1d rotor
-             If decimal_flag=1
-               line$=ReplaceString(line$,".",",")
-             EndIf
-             AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
-           Else ; molecule approximated as oblate symmetric top
-             line$=";" + RSet(StrD(read_rot(1),6),10)+"    inactive external rotor"
-             If decimal_flag=1
-               line$=ReplaceString(line$,".",",")
-             EndIf
-             AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
-             line$=";" + RSet(StrD(read_rot(2),6),10)+"    inactive external rotor"
-             If decimal_flag=1
-               line$=ReplaceString(line$,".",",")
-             EndIf
-             AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
-             line$=RSet(StrD(Sqr(read_rot(1)*read_rot(2)),6),10)+" 1  2D-rot symm  ;symmetry number set to 1." ; instead of 2 inactive external rotors, there is one active 2d Rotor, with rotational constant = geometric mean of the rotational constants from inactive rotors.  ; Symmetry number set to 1, because it is already counted for this fragment in the 1d rotor
-             If decimal_flag=1
-               line$=ReplaceString(line$,".",",")
-             EndIf
-             AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
-             line$=RSet(StrD(read_rot(3),6),10)+" "+Str(read_sym.l(1))+"  1D-rot symm"
-             If decimal_flag=1
-               line$=ReplaceString(line$,".",",")
-             EndIf
-             AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
-           EndIf
-          EndIf
-          ; linear rotors
-          If FindString(UCase(text$),"ROTATIONAL CONSTANT (GHZ)",1) And rot_flag=1
-            read_rot(1) = ValD(Mid(text$,36,12))*conversion_ghz_cm
-            ; determine active rotor
-            line$=RSet(StrD(read_rot(1),6),10)+" "+Str(read_sym.l(1))+"  2D-rot symm"
-            If decimal_flag=1
-              line$=ReplaceString(line$,".",",")
-            EndIf
-            AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
-          EndIf
-          If FindString(UCase(text$),"ROTATIONAL SYMMETRY NUMBER",1)
-            read_sym.l(1) = Val(Right(text$,4))
-          EndIf  
-          If FindString(UCase(text$),"ROTATIONAL TEMPERATURE",1)
-            rot_flag = 1
-          Else
-            rot_flag = 0
-          EndIf
-        Wend
-        CloseFile(0)
-        n_modes_ts = j-1
-        StatusBarText(#StatusBar_0, 0, " Read "+Str(n_modes_ts)+" transition state frequencies.")
-        Gosub resize_window
-      EndIf
-      Else
-        StatusBarText(#StatusBar_0, 0, " Error reading transition state frequencies.")
-        Ergebnis = MessageRequester("Error","Unable To Read TS Frequencies",#PB_MessageRequester_Ok ) 
-    EndIf
-  Else
-    Ergebnis = MessageRequester("Error","No TS Selected to Add to",#PB_MessageRequester_Ok ) 
+  j = 1
+  dateiname$ = OpenFileRequester("Add 2nd Transition State Fragment:", "\*.*", "Gaussian Output (*.out) | *.out | All Files (*.*) | *.*", 1)
+  to_add$ = ""
+  to_add$ = Trim(InputRequester("Add 2nd TS fragment",
+							    "To which TS do you want to add the 2nd TS fragment? Input is in the form n-m. E.g.: 0-1, 9-9", ""))
+  Define dashPos.i, startVal.i, endVal.i
+  dashPos = FindString(to_add$, "-", 1)
+  If dashPos <= 0
+    MessageRequester("Error", "Input must be in the form n-m.", 0)
   EndIf
-  ; new by MR
-  Gosub check_molecule_input
-  ; end new by MR
+  startVal = Val(Left(to_add$, dashPos - 1))
+  endVal = Val(Mid(to_add$, dashPos + 1))
+  If Str(startVal) = "" Or Str(endVal) = ""   
+    MessageRequester("Error", "Both n and m must be numbers.", 0)
+  ElseIf endVal < startVal
+    MessageRequester("Error", "End value must be bigger or equal to start value.", 0)
+  EndIf
+
+ For l = 0 To n_wells + n_ts + 1
+	For k = startVal To endVal
+		active_panel = l
+		panel_name$ = "TS " + Str(k)
+		If GetGadgetItemText(#panel_0,l) = panel_name$
+			If dateiname$
+			If ReadFile(0,dateiname$)
+				AddGadgetItem(#Editor_1+active_panel-1,-1,"")
+				AddGadgetItem(#Editor_1+active_panel-1,-1,"; 2nd fragment: "+dateiname$)
+				If freq_scale <> 1
+				AddGadgetItem(#Editor_1+active_panel-1,-1,"; Frequency Scale Factor: "+StrD(freq_scale,4))
+				EndIf
+				While Eof(0)=0
+				text$=ReadString(0)
+				If FindString(text$,"Multiplicity",1)
+					current_degeneracy.l = Val(Right(text$,2))
+				EndIf  
+				If FindString(text$,"Frequencies -- ",1)
+					For i = 0 To 2
+					dotpos.l = FindString(text$,".",i*23+15)
+					If dotpos > 0
+					read_freq(j) = ValD(Mid(text$,dotpos-5,11))
+					If read_freq(j) > 0
+						line$=RSet(StrD(read_freq(j),4),10)+"    vib"
+						If freq_scale <> 1
+						line$=line$+RSet(StrD(read_freq(j)*freq_scale,4),10)
+						EndIf
+						If decimal_flag=1
+						line$=ReplaceString(line$,".",",")
+						EndIf
+						AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
+						Else
+						line$=";" + RSet(StrD(read_freq(j),4),10)+"    reaction coordinate"
+						If decimal_flag=1
+							line$=ReplaceString(line$,".",",")
+						EndIf
+						AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
+						EndIf
+						j=j+1
+					EndIf
+					Next i
+				EndIf
+				If FindString(text$,"Thermal correction to Energy=",1)
+					th_energy.d = ValD(Right(text$,15))
+				EndIf
+				If FindString(text$,"Sum of electronic and thermal Energies",1)
+					energy.d = ValD(Right(text$,15))-th_energy
+					line$=RSet(StrD(energy,6),22)+"    energy"
+					If decimal_flag=1
+					line$=ReplaceString(line$,".",",")
+					EndIf
+					AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
+					If current_degeneracy = 1
+					line$ = "; The Multiplicity of this fragment is " + RSet(Str(current_degeneracy),1)
+					Else
+					line$ = "; The Multiplicity of this fragment is " + RSet(Str(current_degeneracy),1)+"     WARNING: Degeneracy should be adapted according to the physics of the system"
+					EndIf  
+					AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
+				EndIf
+				If FindString(UCase(text$),"ROTATIONAL CONSTANTS (GHZ)",1) And rot_flag=1
+					For i = 1 To 3
+					read_rot(i) = ValD(Mid(text$,24+i*12,12))*conversion_ghz_cm
+					Next i
+					; determine active rotor ;changed in vs 3.20, 3.21
+					If read_rot(1) = read_rot(3) ; spherical symmetric molecule with read_rot(1)=read_rot(2)=read_rot(3)
+					line$= RSet(StrD(read_rot(1),6),10)+"   1D-rot symm"
+					If decimal_flag=1
+					line$=ReplaceString(line$,".",",")
+					EndIf
+					AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
+					line$=RSet(StrD(read_rot(2),6),10)+"   2D-rot symm"
+					If decimal_flag=1
+					line$=ReplaceString(line$,".",",")
+					EndIf
+					AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
+					line$=";" + RSet(StrD(read_rot(3),6),10)+"    inactive external rotor"
+					If decimal_flag=1
+					line$=ReplaceString(line$,".",",")
+					EndIf
+					AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
+				ElseIf read_rot(1)/read_rot(2) >= read_rot(2)/read_rot(3) ; molecule approximated as prolate symmetric top
+					line$=RSet(StrD(read_rot(1),6),10)+" "+Str(read_sym.l(1))+"  1D-rot symm"
+					If decimal_flag=1
+					line$=ReplaceString(line$,".",",")
+					EndIf
+					AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
+					line$=";" + RSet(StrD(read_rot(2),6),10)+"    inactive external rotor"
+					If decimal_flag=1
+					line$=ReplaceString(line$,".",",")
+					EndIf
+					AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
+					line$=";" + RSet(StrD(read_rot(3),6),10)+"    inactive external rotor"
+					If decimal_flag=1
+					line$=ReplaceString(line$,".",",")
+					EndIf
+					AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
+					line$=RSet(StrD(Sqr(read_rot(3)*read_rot(2)),6),10)+" 1  2D-rot symm ;symmetry number set to 1."  ; instead of 2 inactive external rotors, there is one active 2d Rotor, with rotational constant = geometric mean of the rotational constants from inactive rotors.  ; Symmetry number set to 1, because it is already counted for this fragment in the 1d rotor
+					If decimal_flag=1
+					line$=ReplaceString(line$,".",",")
+					EndIf
+					AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
+				Else ; molecule approximated as oblate symmetric top
+					line$=";" + RSet(StrD(read_rot(1),6),10)+"    inactive external rotor"
+					If decimal_flag=1
+					line$=ReplaceString(line$,".",",")
+					EndIf
+					AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
+					line$=";" + RSet(StrD(read_rot(2),6),10)+"    inactive external rotor"
+					If decimal_flag=1
+					line$=ReplaceString(line$,".",",")
+					EndIf
+					AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
+					line$=RSet(StrD(Sqr(read_rot(1)*read_rot(2)),6),10)+" 1  2D-rot symm  ;symmetry number set to 1." ; instead of 2 inactive external rotors, there is one active 2d Rotor, with rotational constant = geometric mean of the rotational constants from inactive rotors.  ; Symmetry number set to 1, because it is already counted for this fragment in the 1d rotor
+					If decimal_flag=1
+					line$=ReplaceString(line$,".",",")
+					EndIf
+					AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
+					line$=RSet(StrD(read_rot(3),6),10)+" "+Str(read_sym.l(1))+"  1D-rot symm"
+					If decimal_flag=1
+					line$=ReplaceString(line$,".",",")
+					EndIf
+					AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
+				EndIf
+				EndIf
+				; linear rotors
+				If FindString(UCase(text$),"ROTATIONAL CONSTANT (GHZ)",1) And rot_flag=1
+					read_rot(1) = ValD(Mid(text$,36,12))*conversion_ghz_cm
+					; determine active rotor
+					line$=RSet(StrD(read_rot(1),6),10)+" "+Str(read_sym.l(1))+"  2D-rot symm"
+					If decimal_flag=1
+					line$=ReplaceString(line$,".",",")
+					EndIf
+					AddGadgetItem(#Editor_1+active_panel-1,-1,line$)
+				EndIf
+				If FindString(UCase(text$),"ROTATIONAL SYMMETRY NUMBER",1)
+					read_sym.l(1) = Val(Right(text$,4))
+				EndIf  
+				If FindString(UCase(text$),"ROTATIONAL TEMPERATURE",1)
+					rot_flag = 1
+				Else
+					rot_flag = 0
+				EndIf
+				Wend
+				CloseFile(0)
+				n_modes_ts = j-1
+				StatusBarText(#StatusBar_0, 0, " Read "+Str(n_modes_ts)+" transition state frequencies.")
+				Gosub resize_window
+			EndIf
+			Else
+				StatusBarText(#StatusBar_0, 0, " Error reading transition state frequencies.")
+				Ergebnis = MessageRequester("Error","Unable To Read TS Frequencies",#PB_MessageRequester_Ok ) 
+			EndIf
+		Gosub check_molecule_input
+		EndIf	
+	Next k
+  Next l
 Return
 
 ;- remove Well / TS
