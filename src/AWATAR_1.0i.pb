@@ -286,54 +286,63 @@ max_ts_parallel.l = 100     ; maximum number of transition states in parallel re
 fee_barrier.d = 0           ;
 fee_FreeExchange.d = 0
 
-Open_Window_0()
- Repeat
-    EventID.l = WaitWindowEvent()
-    If EventID = #PB_Event_Gadget
-      Select EventGadget()
-        Case #Button_0
-          DoNotClearResults_flag = 0
-          Gosub print_rates
-        Case #Button_8
-          Gosub start_master_equation_modeling
-        Case #Button_9
-          Gosub master_equation_modeling      ; continues master equation modeling (or starts, if nothing to continue on in the first place ...)
-        Case #Button_1
-          Gosub load_reactant
-        Case #Button_2         ;loads thight TS (with inactive rotors)
-          TS_flag = 0
-          Gosub load_ts
-        Case #Button_3
-          DoNotClearResults_flag = 0
-          Gosub print_dos  ;prints density of states
-        Case #Button_4   ;loads 2nd Fragment of loose TS (with 2D rotor instead of inactive rotors)
-          Gosub add_ts
-        Case #Button_5   ;loads 1st Fragment of loose TS (with 2D rotor instead of inactive rotors)
-          TS_flag = 1
-          Gosub load_ts
-        Case #Button_6
-          Gosub save_all
-        Case #Button_7
-          Gosub load_all
-        Case #Button_10
-          Gosub export_population
-        Case #Button_11
-          Gosub Iterative_MEM
-        Case #Button_12
-          Gosub remove_active_panel
-        Case #Button_13   ;new in vs 33.0
-          DoNotClearResults_flag = 0
-          Gosub print_sos
-        Case #Button_14  ; new in vs 36.0
-          Gosub remove_multiple_panels
-      EndSelect
-    ElseIf EventID = #PB_Event_CloseWindow
-      Gosub exit_question
-    ElseIf EventID = #PB_Event_SizeWindow
-      Gosub resize_window
-    EndIf    
-  Until Flag_Exit = 1
-End
+If ProgramParameter(0) = "terminal"
+	Global terminal = 1
+	Open_Window_0()
+		Gosub load_all
+		Gosub Iterative_MEM
+		Gosub save_all
+		End
+Else
+	Global terminal = 0 
+	Open_Window_0()
+	Repeat
+		EventID.l = WaitWindowEvent()
+		If EventID = #PB_Event_Gadget
+		Select EventGadget()
+			Case #Button_0
+			DoNotClearResults_flag = 0
+			Gosub print_rates
+			Case #Button_8
+			Gosub start_master_equation_modeling
+			Case #Button_9
+			Gosub master_equation_modeling      ; continues master equation modeling (or starts, if nothing to continue on in the first place ...)
+			Case #Button_1
+			Gosub load_reactant
+			Case #Button_2         ;loads thight TS (with inactive rotors)
+			TS_flag = 0
+			Gosub load_ts
+			Case #Button_3
+			DoNotClearResults_flag = 0
+			Gosub print_dos  ;prints density of states
+			Case #Button_4   ;loads 2nd Fragment of loose TS (with 2D rotor instead of inactive rotors)
+			Gosub add_ts
+			Case #Button_5   ;loads 1st Fragment of loose TS (with 2D rotor instead of inactive rotors)
+			TS_flag = 1
+			Gosub load_ts
+			Case #Button_6
+			Gosub save_all
+			Case #Button_7
+			Gosub load_all
+			Case #Button_10
+			Gosub export_population
+			Case #Button_11
+			Gosub Iterative_MEM
+			Case #Button_12
+			Gosub remove_active_panel
+			Case #Button_13   ;new in vs 33.0
+			DoNotClearResults_flag = 0
+			Gosub print_sos
+			Case #Button_14  ; new in vs 36.0
+			Gosub remove_multiple_panels
+		EndSelect
+		ElseIf EventID = #PB_Event_CloseWindow
+		Gosub exit_question
+		ElseIf EventID = #PB_Event_SizeWindow
+		Gosub resize_window
+		EndIf    
+	Until Flag_Exit = 1
+	End
 
 ;- Exit_question
 exit_question:
@@ -341,6 +350,7 @@ exit_question:
     Flag_Exit = 1
   EndIf
 Return
+EndIf
 
 
 ;- Load reactant frequencies
@@ -1037,7 +1047,11 @@ active_panel = GetGadgetState(#panel_0)
 ;- Save all
 save_all:
   ; Write complete status in one large file
-  save_file$ = SaveFileRequester("Save kinetic data as:","\*.*","RRKM files (*.rrk) | *.rrk|All Files (*.*)|*.*",0)
+  If terminal = 1
+    save_file$ = ProgramParameter(2)  
+  Else
+    save_file$ = SaveFileRequester("Save kinetic data as:","\*.*","RRKM files (*.rrk) | *.rrk|All Files (*.*)|*.*",0)
+  EndIf 
   If save_file$<>""
     flag = #PB_MessageRequester_Yes
     If Right(save_file$,4) <> ".rrk"
@@ -1103,7 +1117,11 @@ Write_RRK_FILE:
 
 ;- Load all
 Load_all:
-  save_file$ = OpenFileRequester("Load RRKM data from:","\*.*","RRKM files (*.rrk)|*.rrk|All Files (*.*)|*.*",0)
+  If terminal = 1
+	save_file$ = ProgramParameter(1)
+  Else
+	save_file$ = OpenFileRequester("Load RRKM data from:", "\*.*", "RRKM files (*.rrk)|*.rrk|All Files (*.*)|*.*", 0)
+  EndIf
   If save_file$<>""
     If ReadFile(0,save_file$)<>0
       in$=ReadString(0)
