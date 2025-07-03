@@ -5,7 +5,7 @@ AWATAR can be used to perform master equation modeling and related calculations 
 - density of states for minimum structures 
 - sum of states for transition states
 - RRKM rate constants 
-- perform master equation modeling
+- perform master equation modeling of the dissociation process of a population of molecules under BIRD conditions
 
 using Gaussian log-files containing the optimized structures and frequencies of the molecules of interest.
 
