@@ -77,6 +77,8 @@
 ; new in AWATAR vs. 1.0g: checkpoint-file written during iterative MEM
 ; new in AWATAR vs. 1.0h: BS-quantum column not written any more to results, "Room temperature" in Parameters panel with spacing (also without spacing allowed for compatibility)
 ; new in AWATAR vs. 1.0i: Well(TS)-degeneracy-Vector renamed to Well(TS)-degeneracy-List, ln(rate_coefficient) renamed to ln(rate_coefficient/(s-1))
+;new in AWATAR on 11.08.25: Some of the parameters renamed, unit removed from Products in Results of Real time MEM, Rate of photon absorption k_irmpd for each well seperately
+
 
 IncludeFile "AWATAR_1.0i_include.pb"
 
@@ -235,6 +237,8 @@ Dim total_dos_allwells.d(0)     ; densitiy of states of all wells calculated for
 Dim dprod.d(0)                  ; product formation in reactive processes
 Dim dwell.d(0,0)                ; depletion of well due to radiative processes and also reactive processes
 Dim t_manual_list.d(0)          ; Array containing Manual List for temperatures in loop ; new in vs. 3.57
+Dim k_irmpd.d(0)                ; rate of IRMPD photon absorption in s-1 for each well seperately
+
 
 ;- Variable Definition - optional, but very helpful!!!
 bs_quantum.d = 1            ; initialize bs_quantum: Energy Quantum for Beyer-Swinehart algorithm
@@ -271,7 +275,6 @@ t_room.d = 0                ; black-body radiation temperature trough window (Ro
 window_angle.d = 0          ; portion of the solid angle fo the ICR-cell covered by the window 
 int_scale.d = 1             ; scaling of IR intensities
 freq_scale.d = 0            ; scaling of IR frequencies
-k_irmpd.d = 0               ; rate of IRMPD photon absorption in s-1
 nu_irmpd.d = 0              ; energy of IRMPD photon in cm-1
 ; new in vs. 2.7 for particle in a box
 pib_mass.d = 0              ; mass of particle in u
@@ -2712,7 +2715,7 @@ Return
 read_meq_parameters:
 j = 0
   manual_temp_list_flag.l = 0 ;default Manual list for temperatures in loop is inactive
-  k_irmpd.d = 0    ; default: no IRMPD
+  Dim k_irmpd.d(n_wells-1)    ; default: no IRMPD; This sets all entries of the array to 0.
   nu_irmpd.d = 0   ; default: no IRMPD
   real_time_flag.l = 0 ; default: run MEM in convergence mode
   t_totsim.d = 1      ; default total simulation time for real time MEM
@@ -2738,7 +2741,7 @@ j = 0
       Gosub parse
       total_en_max.d = Val(parse$)
     EndIf
-    If FindString(text$,"size of finite energy element in cm-1:",1)
+    If FindString(text$,"size of finite energy element in cm-1:",1) ; This is for compability with versions older than August 2025
       Repeat
         Gosub parse
       Until parse$ = "cm-1:"
@@ -2746,6 +2749,16 @@ j = 0
       total_en_step.d = ValD(parse$)
       total_en_start.d = ValD(parse$)
     EndIf
+    
+    If FindString(text$,"bin size in cm-1:",1)
+      Repeat
+        Gosub parse
+      Until parse$ = "cm-1:"
+      Gosub parse
+      total_en_step.d = ValD(parse$)
+      total_en_start.d = ValD(parse$)
+    EndIf
+    
     If FindString(text$,"energy quantum for beyer/swinehart in cm-1:",1)
       Repeat
         Gosub parse
@@ -2753,20 +2766,38 @@ j = 0
       Gosub parse
       bs_quantum.d = ValD(parse$)
     EndIf
-    If FindString(text$,"start temperature in k:",1) 
+    If FindString(text$,"start temperature in k:",1) ; This is for compatibility with versions older than August 2025
       Repeat
         Gosub parse
       Until parse$ = "k:"
       Gosub parse
       t_amb0.d = ValD(parse$)
     EndIf
-    If FindString(text$,"end temperature in k:",1)
+    
+    If FindString(text$,"loop starts with temperature in k:",1)
+      Repeat
+        Gosub parse
+      Until parse$ = "k:"
+      Gosub parse
+      t_amb0.d = ValD(parse$)
+    EndIf    
+    
+    If FindString(text$,"end temperature in k:",1) ; This is for compatibility with versions older than August 2025
       Repeat
         Gosub parse
       Until parse$ = "k:"
       Gosub parse
       t_amb1.d = ValD(parse$)
     EndIf
+    
+    If FindString(text$,"loop ends with temperature in k:",1)
+      Repeat
+        Gosub parse
+      Until parse$ = "k:"
+      Gosub parse
+      t_amb1.d = ValD(parse$)
+    EndIf    
+    
     If FindString(text$,"number of temperatures in loop:",1)
       Repeat
         Gosub parse
@@ -2792,13 +2823,22 @@ j = 0
       Gosub parse
       t_room.d = ValD(parse$)
     EndIf
-    If FindString(text$,"room temperature in k:",1)  ;room temperature with spacing corrected in vs AWATAR1.0h
+    If FindString(text$,"room temperature in k:",1)  ;room temperature with spacing corrected in vs AWATAR1.0h This is for versions before August 2025
       Repeat
         Gosub parse
       Until parse$ = "k:"
       Gosub parse
       t_room.d = ValD(parse$)
     EndIf
+    
+    If FindString(text$,"temperature of icr cell window in k:",1)
+      Repeat
+        Gosub parse
+      Until parse$ = "k:"
+      Gosub parse
+      t_room.d = ValD(parse$)
+    EndIf
+    
     If FindString(text$,"proportion on solid angle of icr cell window:",1) ;icr cell with spacing corrected in vs AWATAR1.0a
       Repeat
         Gosub parse
@@ -2813,13 +2853,53 @@ j = 0
       Gosub parse
       window_angle.d = ValD(parse$)
     EndIf
-    If FindString(text$,"rate of photon absorption in s-1:",1)
+    
+    If FindString(text$,"rate of photon absorption in s-1:",1) ; This is for compatibility with versions before August 2025
       Repeat
         Gosub parse
       Until parse$ = "s-1:"
       Gosub parse
-      k_irmpd.d = ValD(parse$)
+        For i = 0 To n_wells-1
+          k_irmpd.d(i) = ValD(parse$)
+        Next i 
     EndIf
+    
+    If FindString(text$,"rate of photon absorption for well",1)
+      Repeat
+        Gosub parse
+      Until parse$ = "well"
+      Gosub parse
+      If parse$="all"  ; If "Rate of Photon absorption for Well all in s-1:" is used.
+        Gosub parse
+        Gosub parse
+        Gosub parse
+        For i = 0 To n_wells-1
+          k_irmpd.d(i) = ValD(parse$)
+        Next i  
+      Else ; If "Rate of Photon absorption for Well 0 3 7 in s-1:" is used.
+        Repeat
+          Gosub parse
+        Until parse$ = "s-1:"
+          Gosub parse
+          k_ir.d = Val(parse$) ;This is the rate of photon absorption
+        text$=Trunc(GetGadgetItemText(#Editor_1,j,0)) ;Now read, for which wells it should apply.
+        If decimal_flag = 1
+          text$=ReplaceString(text$,",",".")
+        EndIf  
+        Repeat
+          Gosub parse
+        Until parse$ = "well"
+        Repeat
+          Gosub parse
+          If parse$ = "in" Or Val(parse$) > n_wells-1
+            ;Do nothing
+          Else  
+            k_irmpd(Val(parse$))= k_ir.d
+          EndIf  
+        Until parse$ = "in"   
+      EndIf
+    EndIf
+    
     If FindString(text$,"irmpd photon energy in cm-1:",1)
       Repeat
         Gosub parse
@@ -2834,13 +2914,22 @@ j = 0
       Gosub parse
       int_scale.d = ValD(parse$)
     EndIf
-    If FindString(text$,"finite time step at 300 k:",1)
+    If FindString(text$,"finite time step at 300 k:",1) ; This is for compatibility with versions before August 2025
       Repeat
         Gosub parse
       Until parse$ = "k:"
       Gosub parse
       dt300k_1.d = ValD(parse$)
     EndIf
+    
+    If FindString(text$,"finite time step parameter:",1)
+      Repeat
+        Gosub parse
+      Until parse$ = "parameter:"
+      Gosub parse
+      dt300k_1.d = ValD(parse$)
+    EndIf
+    
     If FindString(text$,"minimum time step at 300 k:",1)
       Repeat
         Gosub parse
@@ -3170,13 +3259,13 @@ master_equation_modeling_rate_calculation:
         Next i_fee
       EndIf
       ; new in VS 3.5: add IRMPD rate, if applicable
-      If k_irmpd.d > 0 And nu_irmpd > 0
-        nu_step.l = Int(nu_irmpd / total_en_step+0.5)
-        For i_fee = Int(well_relative(i_wells)/total_en_step+0.5) To n_fee - nu_step      ; loop over allowed energy levels from which an IRMPD photon can be absorbed
-          k_rad(i_t,i_wells,i_fee + nu_step,i_fee) = k_rad(i_t,i_wells,i_fee + nu_step,i_fee) + k_irmpd
-          k_rad(i_t,i_wells,i_fee,i_fee) = k_rad(i_t,i_wells,i_fee,i_fee) - k_irmpd
-        Next i_fee
-      EndIf
+        If k_irmpd.d(i_wells) > 0 And nu_irmpd > 0
+          nu_step.l = Int(nu_irmpd / total_en_step+0.5)
+          For i_fee = Int(well_relative(i_wells)/total_en_step+0.5) To n_fee - nu_step      ; loop over allowed energy levels from which an IRMPD photon can be absorbed
+            k_rad(i_t,i_wells,i_fee + nu_step,i_fee) = k_rad(i_t,i_wells,i_fee + nu_step,i_fee) + k_irmpd(i_wells)
+            k_rad(i_t,i_wells,i_fee,i_fee) = k_rad(i_t,i_wells,i_fee,i_fee) - k_irmpd(i_wells)
+          Next i_fee
+        EndIf
       ; end IRMPD section  
     Next i_wells
     PrintN("Radiative rates calculated.")
@@ -3357,7 +3446,7 @@ master_equation_modeling_real_time:
     AddGadgetItem(#Editor_0,-1,clip$)
     clip$=RSet("(s)",15)+RSet("",20)
     For i_channels = 0 To n_channels-1
-      clip$=clip$+RSet("(s-1)",20)
+      clip$=clip$+RSet("",20)
     Next i_channels  
     clip$=clip$+RSet("(cm-1)",20)
     AddGadgetItem(#Editor_0,-1,clip$)
@@ -4012,6 +4101,7 @@ Return
     EndIf
     Return
 ; IDE Options = PureBasic 6.12 LTS (Windows - x64)
-; CursorPosition = 78
+; CursorPosition = 79
+; FirstLine = 72
 ; Folding = -
 ; Executable = AWATAR_1.0i.exe

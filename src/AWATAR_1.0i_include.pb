@@ -79,7 +79,7 @@ Procedure Open_Window_0()
         AddGadgetItem(#Editor_1, -1,"     The filename is:                                      FILENAME")        
         AddGadgetItem(#Editor_1, -1,"     Frequency Scale Factor:                               0.96  ; used in reading Gaussian Data")
         AddGadgetItem(#Editor_1, -1,"     Energy range of population in cm-1:                   20000")
-        AddGadgetItem(#Editor_1, -1,"     Size of finite energy element in cm-1:                100")
+        AddGadgetItem(#Editor_1, -1,"     Bin size in cm-1:                                     100")
         AddGadgetItem(#Editor_1, -1,"     Energy quantum for Beyer/Swinehart in cm-1:           1")
         AddGadgetItem(#Editor_1, -1,"")
         AddGadgetItem(#Editor_1, -1,";Reaction Channels:")
@@ -92,14 +92,15 @@ Procedure Open_Window_0()
         AddGadgetItem(#Editor_1, -1,";   BIRD parameters:")
         AddGadgetItem(#Editor_1, -1,"       Number of temperatures in loop:                      3")
         AddGadgetItem(#Editor_1, -1,";      Manual list for temperatures in loop:                150.00 215.34 250.50  ;Define Temperatures in K which should be calculated. The Number of temperatures in loop has to match the number of entries in the list. Start temperature and End temperature are ignored if the Manual list is active.")
-        AddGadgetItem(#Editor_1, -1,"       Start temperature in K:                              200")
-        AddGadgetItem(#Editor_1, -1,"       End temperature in K:                                300")
+        AddGadgetItem(#Editor_1, -1,"       Loop starts with temperature in K:                   200")
+        AddGadgetItem(#Editor_1, -1,"       Loop ends with temperature in K:                     300")
         AddGadgetItem(#Editor_1, -1,"       Proportion on solid angle of ICR cell window:        0.002")
-        AddGadgetItem(#Editor_1, -1,"       Room temperature in K:                               288")
+        AddGadgetItem(#Editor_1, -1,"       Temperature of ICR cell window in K:                 288")
         AddGadgetItem(#Editor_1, -1,";  IRMPD parameters:")
-        AddGadgetItem(#Editor_1, -1,"       Rate of photon absorption in s-1:                    0")
+        AddGadgetItem(#Editor_1, -1,"       Rate of Photon absorption for Well all in s-1:          0")
+        AddGadgetItem(#Editor_1, -1,";      Rate of Photon absorption for Well 0 3 7 in s-1:       0")
         AddGadgetItem(#Editor_1, -1,"       IRMPD photon energy in cm-1:                         0")
-        AddGadgetItem(#Editor_1, -1,"   Finite time step at 300 K:                               0.00001         ; Used for Start MEM, Continue MEM and real time MEM")
+        AddGadgetItem(#Editor_1, -1,"   Finite time step parameter:                              0.00001         ; Used for Start MEM, Continue MEM and real time MEM")
         AddGadgetItem(#Editor_1, -1,";Real time MEM parameters:")
         AddGadgetItem(#Editor_1, -1,"       Run MEM in real time (YES/NO):                       YES")
         AddGadgetItem(#Editor_1, -1,"       Total simulation time in seconds:                    1")
@@ -147,7 +148,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 6.12 LTS (Windows - x64)
-; CursorPosition = 123
-; FirstLine = 109
+; CursorPosition = 99
+; FirstLine = 91
 ; Folding = -
 ; Executable = Z:\Paper in Progress\Awatar_PCCP_Tutorial\AWATAR_Manual\AWATAR_1.0d.exe
