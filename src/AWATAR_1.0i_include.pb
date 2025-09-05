@@ -97,8 +97,8 @@ Procedure Open_Window_0()
         AddGadgetItem(#Editor_1, -1,"       Proportion on solid angle of ICR cell window:        0.002")
         AddGadgetItem(#Editor_1, -1,"       Temperature of ICR cell window in K:                 288")
         AddGadgetItem(#Editor_1, -1,";  IRMPD parameters:")
-        AddGadgetItem(#Editor_1, -1,"       Rate of Photon absorption for Well all in s-1:          0")
-        AddGadgetItem(#Editor_1, -1,";      Rate of Photon absorption for Well 0 3 7 in s-1:       0")
+        AddGadgetItem(#Editor_1, -1,"       Rate of Photon absorption for Well all in s-1:       0")
+        AddGadgetItem(#Editor_1, -1,";      Rate of Photon absorption for Well 0 3 7 in s-1:     0")
         AddGadgetItem(#Editor_1, -1,"       IRMPD photon energy in cm-1:                         0")
         AddGadgetItem(#Editor_1, -1,"   Finite time step parameter:                              0.00001         ; Used for Start MEM, Continue MEM and real time MEM")
         AddGadgetItem(#Editor_1, -1,";Real time MEM parameters:")
@@ -147,8 +147,8 @@ Procedure Open_Window_0()
 EndProcedure
 
 
-; IDE Options = PureBasic 6.12 LTS (Windows - x64)
-; CursorPosition = 99
+; IDE Options = PureBasic 5.73 LTS (Windows - x64)
+; CursorPosition = 100
 ; FirstLine = 91
 ; Folding = -
 ; Executable = Z:\Paper in Progress\Awatar_PCCP_Tutorial\AWATAR_Manual\AWATAR_1.0d.exe
