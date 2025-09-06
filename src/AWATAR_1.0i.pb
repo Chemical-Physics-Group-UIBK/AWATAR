@@ -4100,8 +4100,8 @@ Return
       CloseFile(1)
     EndIf
     Return
-; IDE Options = PureBasic 6.12 LTS (Windows - x64)
+; IDE Options = PureBasic 5.73 LTS (Windows - x64)
 ; CursorPosition = 79
 ; FirstLine = 72
 ; Folding = -
-; Executable = AWATAR_1.0i.exe
+; Executable = ..\bin\AWATAR_1.0i.exe
