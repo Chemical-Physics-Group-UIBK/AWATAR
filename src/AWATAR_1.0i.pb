@@ -78,7 +78,7 @@
 ; new in AWATAR vs. 1.0h: BS-quantum column not written any more to results, "Room temperature" in Parameters panel with spacing (also without spacing allowed for compatibility)
 ; new in AWATAR vs. 1.0i: Well(TS)-degeneracy-Vector renamed to Well(TS)-degeneracy-List, ln(rate_coefficient) renamed to ln(rate_coefficient/(s-1))
 ;new in AWATAR on 11.08.25: Some of the parameters renamed, unit removed from Products in Results of Real time MEM, Rate of photon absorption k_irmpd for each well seperately
-
+;new in AWATAR on 07.10.25: Bug fixed regarding reading Gaussian Data: For some calculations (for example TS) the results are printed twice in the Gaussian log files. Now only the last block of results is read by AWATAR.
 
 IncludeFile "AWATAR_1.0i_include.pb"
 
@@ -368,9 +368,23 @@ load_reactant:
   j=1
   dateiname$ = OpenFileRequester("Read Reactant Frequencies:", "\*.*", "Gaussian Output (*.out) | *.out | All Files (*.*) | *.*", 1, #PB_Requester_MultiSelection)
   While dateiname$
+    
+    		;new on 07.10.25 ; This counts, how often the results of interest are printed in the results-file. For example for TS calculations the results are printed twice in Gaussian, and only the last results should be used by AWATAR.
+		If ReadFile(0,dateiname$)
+		Results_Blocks_Counter = 0
+		 While Eof(0)=0
+		  text$=ReadString(0)
+		   If FindString(text$,"Harmonic frequencies (cm**-1), IR intensities (KM/Mole), Raman scattering",1)
+		     Results_Blocks_Counter = Results_Blocks_Counter + 1
+		   EndIf   
+		 Wend    
+		EndIf
+		    ;End new on 07.10.25
+		
   	If dateiname$
 		If ReadFile(0,dateiname$)
-		flag_population.l = 0 ; new in vs. 2.8, prevent continue MEM with changed system
+		  flag_population.l = 0 ; new in vs. 2.8, prevent continue MEM with changed system
+		  Results_Blocks_Number = 0  ;new on 07.10.25, prevents using doubly printed results twice.
 		n_wells = n_wells + 1
 		OpenGadgetList(#Panel_0)
 		AddGadgetItem(#Panel_0, -1, "Well "+Str(n_wells-1))
@@ -382,10 +396,18 @@ load_reactant:
 			AddGadgetItem(#Editor_1+n_wells+n_ts,-1,"; Frequency Scale Factor: "+StrD(freq_scale,4))
 		EndIf
 		While Eof(0)=0
-			text$=ReadString(0)
+		  text$=ReadString(0)
 			If FindString(text$,"Multiplicity",1)
 			current_degeneracy.l = Val(Right(text$,2))
-			EndIf
+		  EndIf
+		
+		  ;new on 07.10.25
+		  If FindString(text$,"Harmonic frequencies (cm**-1), IR intensities (KM/Mole), Raman scattering",1)
+		    Results_Blocks_Number = Results_Blocks_Number + 1
+		  EndIf   
+		  If Results_Blocks_Number >= Results_Blocks_Counter  ; Do the following only if the last results block is reached.
+		  ;end new on 07.10.25  	    
+		    
 			If FindString(text$,"Frequencies -- ",1)
 			For i = 0 To 2
 				dotpos.l = FindString(text$,".",i*23+15)
@@ -501,7 +523,8 @@ load_reactant:
 			rot_flag = 1
 			Else
 			rot_flag = 0
-			EndIf
+		  EndIf
+		EndIf  ; This line is new on 07.10.25
 		Wend
 		CloseFile(0)
 		n_modes = j-1
@@ -529,9 +552,23 @@ load_ts:
   j=1
 dateiname$ = OpenFileRequester("Read Reactant Frequencies:", "\*.*", "Gaussian Output (*.out) | *.out | All Files (*.*) | *.*", 1, #PB_Requester_MultiSelection)
 While dateiname$
+  
+    ;new on 07.10.25 ; This counts, how often the results of interest are printed in the results-file. For example for TS calculations the results are printed twice in Gaussian, and only the last results should be used by AWATAR.
+		If ReadFile(0,dateiname$)
+		Results_Blocks_Counter = 0
+		 While Eof(0)=0
+		  text$=ReadString(0)
+		   If FindString(text$,"Harmonic frequencies (cm**-1), IR intensities (KM/Mole), Raman scattering",1)
+		     Results_Blocks_Counter = Results_Blocks_Counter + 1
+		   EndIf   
+		 Wend    
+		EndIf
+		    ;End new on 07.10.25
+  
   If dateiname$
     If ReadFile(0,dateiname$)
       n_ts = n_ts + 1
+      Results_Blocks_Number = 0  ;new on 07.10.25, prevents using doubly printed results twice.
       OpenGadgetList(#Panel_0)
       AddGadgetItem(#Panel_0, -1, "TS "+Str(n_ts-1))
       EditorGadget(#Editor_1+n_wells+n_ts, -2, -2, 900, 470)
@@ -546,6 +583,14 @@ While dateiname$
         If FindString(text$,"Multiplicity",1)
           current_degeneracy.l = Val(Right(text$,2))
         EndIf
+        
+      ;new on 07.10.25
+		  If FindString(text$,"Harmonic frequencies (cm**-1), IR intensities (KM/Mole), Raman scattering",1)
+		    Results_Blocks_Number = Results_Blocks_Number + 1
+		  EndIf   
+		  If Results_Blocks_Number >= Results_Blocks_Counter  ; Do the following only if the last results block is reached.
+		  ;end new on 07.10.25 
+        
         If FindString(text$,"Frequencies -- ",1)
           For i = 0 To 2
             dotpos.l = FindString(text$,".",i*23+15)
@@ -725,6 +770,7 @@ While dateiname$
         Else
           rot_flag = 0
         EndIf
+      EndIf  ; This line is new on 07.10.25  
       Wend
       CloseFile(0)
       n_modes_ts = j-1
@@ -772,8 +818,22 @@ add_ts:
 		active_panel = l
 		panel_name$ = "TS " + Str(k)
 		If GetGadgetItemText(#panel_0,l) = panel_name$
+		  
+		   ;new on 07.10.25 ; This counts, how often the results of interest are printed in the results-file. For example for tight TS calculations the results are printed twice in Gaussian, and only the last results should be used by AWATAR.
+		If ReadFile(0,dateiname$)
+		Results_Blocks_Counter = 0
+		 While Eof(0)=0
+		  text$=ReadString(0)
+		   If FindString(text$,"Harmonic frequencies (cm**-1), IR intensities (KM/Mole), Raman scattering",1)
+		     Results_Blocks_Counter = Results_Blocks_Counter + 1
+		   EndIf   
+		 Wend    
+		EndIf
+		    ;End new on 07.10.25
+		  
 			If dateiname$
 			If ReadFile(0,dateiname$)
+			  Results_Blocks_Number = 0  ;new on 07.10.25, prevents using doubly printed results twice.  
 				AddGadgetItem(#Editor_1+active_panel-1,-1,"")
 				AddGadgetItem(#Editor_1+active_panel-1,-1,"; 2nd fragment: "+dateiname$)
 				If freq_scale <> 1
@@ -783,7 +843,15 @@ add_ts:
 				text$=ReadString(0)
 				If FindString(text$,"Multiplicity",1)
 					current_degeneracy.l = Val(Right(text$,2))
-				EndIf  
+				EndIf 
+				
+			;new on 07.10.25
+		  If FindString(text$,"Harmonic frequencies (cm**-1), IR intensities (KM/Mole), Raman scattering",1)
+		    Results_Blocks_Number = Results_Blocks_Number + 1
+		  EndIf   
+		  If Results_Blocks_Number >= Results_Blocks_Counter  ; Do the following only if the last results block is reached.
+      ;end new on 07.10.25 
+		    
 				If FindString(text$,"Frequencies -- ",1)
 					For i = 0 To 2
 					dotpos.l = FindString(text$,".",i*23+15)
@@ -909,6 +977,7 @@ add_ts:
 				Else
 					rot_flag = 0
 				EndIf
+			  EndIf  ; This line is new on 07.10.25
 				Wend
 				CloseFile(0)
 				n_modes_ts = j-1
@@ -4101,7 +4170,7 @@ Return
     EndIf
     Return
 ; IDE Options = PureBasic 5.73 LTS (Windows - x64)
-; CursorPosition = 79
-; FirstLine = 72
+; CursorPosition = 80
+; FirstLine = 59
 ; Folding = -
-; Executable = ..\bin\AWATAR_1.0i.exe
+; Executable = AWATAR_1.0i.exe
