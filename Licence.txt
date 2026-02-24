@@ -1,0 +1,6 @@
+AWATAR 1.0 © 2026 M. Beyer, M. Salzburger, M. Ončák
+Distributed with CC-BY 4.0 license, see https://creativecommons.org/licenses/by/4.0/
+To attribute the authors, cite: M. Salzburger, M. Reimann, J. C. Hartmann, M. Ončák, M. K. Beyer
+Phys. Chem. Chem. Phys. 2026, 28, in print. DOI: 10.1039/...
+ 
+Financial support from Deutsche Forschungsgemeinschaft, grant no. BE2505/3-1 (MKB) is gratefully acknowledged. This research was funded in part by the Austrian Science Fund, grant DOIs 10.55776/W1259 (MS, MKB), 10.55776/P35407 (JCH, MKB), 10.55776/PAT3834224 (MS, MKB), 10.55776/ESP662 (MR) and 10.55776/P35013 (MO).
