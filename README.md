@@ -1,0 +1,1 @@
+AWATAR performs RRKM and AWATAR calculations for unimolecular reactions in the gas phase. Master equation modeling can be applied to raditive processes. A tutorial review is currently under review at PCCP. Once published, this readme will be updated. Applications of the program are explained in this tutorial review.
