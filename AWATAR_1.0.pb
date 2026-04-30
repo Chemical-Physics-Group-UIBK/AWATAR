@@ -88,6 +88,7 @@
 ; new in AWATAR vs. 1.0n on 18.02.25: Citation added. File format changed to Utf8 for correct display of the letter č.
 ;AWATAR vs. 1.0n saved as AWATAR1.0
 ; new in AWATAR 1.0 on 21.02.26      :small changes in headline of the program, About-Button added.
+; new in AWATAR 1.0 on 30.04.26      :DOI of tutorial review added
 
 
 
@@ -371,7 +372,7 @@ EndIf
 
 ;- About ; This button gives information on the citation of the program.
 about:
-Ergebnis = MessageRequester("Information","AWATAR 1.0 © 2026 M. Beyer, M. Salzburger, M. Ončák" + Chr(10) + "Distributed With CC-BY 4.0 license, see https://creativecommons.org/licenses/by/4.0/" + Chr(10) + "To attribute the authors, cite: M. Salzburger, M. Reimann, J. C. Hartmann, M. Ončák, M. K. Beyer, Phys. Chem. Chem. Phys. 2026, 28, in print. DOI: 10.1039/..." + Chr(10) + Chr(10) +"Financial support from Deutsche Forschungsgemeinschaft, grant no. BE2505/3-1 (MKB) is gratefully acknowledged. This research was funded in part by the Austrian Science Fund, grant DOIs 10.55776/W1259 (MS, MKB), 10.55776/P35407 (JCH, MKB), 10.55776/PAT3834224 (MS, MKB), 10.55776/ESP662 (MR) And 10.55776/P35013 (MO).",#PB_MessageRequester_Ok )
+Ergebnis = MessageRequester("Information","AWATAR 1.0 © 2026 M. Beyer, M. Salzburger, M. Ončák" + Chr(10) + "Distributed With CC-BY 4.0 license, see https://creativecommons.org/licenses/by/4.0/" + Chr(10) + "To attribute the authors, cite: M. Salzburger, M. Reimann, J. C. Hartmann, M. Ončák, M. K. Beyer, Phys. Chem. Chem. Phys. 2026, 28, in print. DOI: 10.1039/D6CP00705H" + Chr(10) + Chr(10) +"Financial support from Deutsche Forschungsgemeinschaft, grant no. BE2505/3-1 (MKB) is gratefully acknowledged. This research was funded in part by the Austrian Science Fund, grant DOIs 10.55776/W1259 (MS, MKB), 10.55776/P35407 (JCH, MKB), 10.55776/PAT3834224 (MS, MKB), 10.55776/ESP662 (MR) And 10.55776/P35013 (MO).",#PB_MessageRequester_Ok )
 Return
 
 ;- Load reactant frequencies
@@ -2179,7 +2180,7 @@ print_dos:
       AddGadgetItem(#Editor_0,-1,"Distributed with CC-BY 4.0 license, see https://creativecommons.org/licenses/by/4.0/")
       AddGadgetItem(#Editor_0,-1,"To attribute the authors, cite: M. Salzburger, M. Reimann, J. C. Hartmann, M. Ončák, M. K. Beyer")
       AddGadgetItem(#Editor_0,-1,"A Practical Guide to RRKM Theory, its Simplified Multi-Well Version AWATAR and Master Equation Modelling of Radiative Processes")
-      AddGadgetItem(#Editor_0,-1,"Phys. Chem. Chem. Phys. 2026, 28, in print. DOI: 10.1039/...")
+      AddGadgetItem(#Editor_0,-1,"Phys. Chem. Chem. Phys. 2026, 28, in print. DOI: 10.1039/D6CP00705H")
       AddGadgetItem(#Editor_0,-1,"")
     EndIf
     SetGadgetState(#Panel_0,0)
@@ -2250,7 +2251,7 @@ print_sos: ;First, the sos_ts is calculated
       AddGadgetItem(#Editor_0,-1,"Distributed with CC-BY 4.0 license, see https://creativecommons.org/licenses/by/4.0/")
       AddGadgetItem(#Editor_0,-1,"To attribute the authors, cite: M. Salzburger, M. Reimann, J. C. Hartmann, M. Ončák, M. K. Beyer")
       AddGadgetItem(#Editor_0,-1,"A Practical Guide to RRKM Theory, its Simplified Multi-Well Version AWATAR and Master Equation Modelling of Radiative Processes")
-      AddGadgetItem(#Editor_0,-1,"Phys. Chem. Chem. Phys. 2026, 28, in print. DOI: 10.1039/...")
+      AddGadgetItem(#Editor_0,-1,"Phys. Chem. Chem. Phys. 2026, 28, in print. DOI: 10.1039/D6CP00705H")
       AddGadgetItem(#Editor_0,-1,"")
     EndIf
     SetGadgetState(#Panel_0,0)
@@ -2571,7 +2572,7 @@ Gosub read_channels
       AddGadgetItem(#Editor_0,-1,"Distributed with CC-BY 4.0 license, see https://creativecommons.org/licenses/by/4.0/")
       AddGadgetItem(#Editor_0,-1,"To attribute the authors, cite: M. Salzburger, M. Reimann, J. C. Hartmann, M. Ončák, M. K. Beyer")
       AddGadgetItem(#Editor_0,-1,"A Practical Guide to RRKM Theory, its Simplified Multi-Well Version AWATAR and Master Equation Modelling of Radiative Processes")
-      AddGadgetItem(#Editor_0,-1,"Phys. Chem. Chem. Phys. 2026, 28, in print. DOI: 10.1039/...")
+      AddGadgetItem(#Editor_0,-1,"Phys. Chem. Chem. Phys. 2026, 28, in print. DOI: 10.1039/D6CP00705H")
       AddGadgetItem(#Editor_0,-1,"")
   EndIf
   SetGadgetState(#Panel_0,0)
@@ -3458,7 +3459,7 @@ master_equation_modeling_convergence:
       AddGadgetItem(#Editor_0,-1,"Distributed with CC-BY 4.0 license, see https://creativecommons.org/licenses/by/4.0/")
       AddGadgetItem(#Editor_0,-1,"To attribute the authors, cite: M. Salzburger, M. Reimann, J. C. Hartmann, M. Ončák, M. K. Beyer")
       AddGadgetItem(#Editor_0,-1,"A Practical Guide to RRKM Theory, its Simplified Multi-Well Version AWATAR and Master Equation Modelling of Radiative Processes")
-      AddGadgetItem(#Editor_0,-1,"Phys. Chem. Chem. Phys. 2026, 28, in print. DOI: 10.1039/...")
+      AddGadgetItem(#Editor_0,-1,"Phys. Chem. Chem. Phys. 2026, 28, in print. DOI: 10.1039/D6CP00705H")
       AddGadgetItem(#Editor_0,-1,"")
       AddGadgetItem(#Editor_0,-1,"")
   SetGadgetState(#Panel_0,0)
@@ -3574,7 +3575,7 @@ master_equation_modeling_real_time:
   AddGadgetItem(#Editor_0,-1,"Distributed with CC-BY 4.0 license, see https://creativecommons.org/licenses/by/4.0/")
   AddGadgetItem(#Editor_0,-1,"To attribute the authors, cite: M. Salzburger, M. Reimann, J. C. Hartmann, M. Ončák, M. K. Beyer")
   AddGadgetItem(#Editor_0,-1,"A Practical Guide to RRKM Theory, its Simplified Multi-Well Version AWATAR and Master Equation Modelling of Radiative Processes")
-  AddGadgetItem(#Editor_0,-1,"Phys. Chem. Chem. Phys. 2026, 28, in print. DOI: 10.1039/...")
+  AddGadgetItem(#Editor_0,-1,"Phys. Chem. Chem. Phys. 2026, 28, in print. DOI: 10.1039/D6CP00705H")
   AddGadgetItem(#Editor_0,-1,"")
   AddGadgetItem(#Editor_0,-1,"")
   AddGadgetItem(#Editor_0,-1,"Master Equation Modeling in Real Time")
@@ -4295,8 +4296,8 @@ Return
       CloseFile(1)
     EndIf
     Return
-; IDE Options = PureBasic 6.30 (Windows - x64)
-; CursorPosition = 89
-; FirstLine = 63
+; IDE Options = PureBasic 6.10 LTS (Windows - x64)
+; CursorPosition = 2574
+; FirstLine = 2571
 ; Folding = -
 ; Executable = AWATAR_1.0.exe
